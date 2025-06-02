@@ -1,9 +1,6 @@
 'use client';
 
-import { HocuspocusProvider } from '@hocuspocus/provider';
 import { IronCalc, Model, init } from '@ironcalc/workbook';
-import { WorkbookState } from '@ironcalc/workbook/dist/types/WorkbookState';
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
 import { Doc } from '@/features/docs/doc-management';
@@ -25,9 +22,10 @@ export default function IronCalcEditor({
 }: IronCalcEditorProps) {
   const [model, setModel] = useState<Model | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
-  const [workbookState, setWorkbookState] = useState<WorkbookState | null>(
-    null,
-  );
+  const [workbookData, setWorkbookData] = useState<Uint8Array>(
+    new Uint8Array([0])
+  )
+
 
   // const isVersion = doc.id !== storeId;
   // const readOnly = !doc.abilities.partial_update || isVersion;
@@ -67,18 +65,35 @@ export default function IronCalcEditor({
 
         // If no content or failed to load, create new model
         setModel(new Model('Workbook1', 'en', 'UTC'));
+
       },
       () => {},
     );
   }, [doc.content]);
 
-  if (!model) {
-    return <div>Loading...</div>;
-  }
+  useEffect(() => {
+    console.log('hook2');
 
-  return (
-    <div className="ironcalc-workbook" style={{ height: '100%' }}>
-      <IronCalc model={model} />
-    </div>
-  );
+    const interval = setInterval(() => {
+      if (!model) {
+        return;
+      }
+      const flushSendQueue = model.flushSendQueue()
+      if (flushSendQueue.length === 0) {
+        return;
+      }
+      const binString = Array.from(flushSendQueue, (byte) =>
+        String.fromCodePoint(byte),
+      ).join("");
+      console.log(`New data : ${btoa(binString)}`)
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [model]);
+
+  return (model ?<div className="ironcalc-workbook" style={{ height: '100%' }}>
+    <IronCalc model={model} />
+  </div>:
+  <div>Loading...</div>);
+
 }
