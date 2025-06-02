@@ -16,12 +16,16 @@ import { TableContent } from '@/docs/doc-table-content/';
 import { Versions, useDocVersion } from '@/docs/doc-versioning/';
 import { useResponsiveStore } from '@/stores';
 
-import { BlockNoteEditor, BlockNoteEditorVersion } from './BlockNoteEditor';
-
 interface DocEditorProps {
   doc: Doc;
   versionId?: Versions['version_id'];
 }
+
+import dynamic from 'next/dynamic';
+const IronCalcEditor = dynamic(() => import('./IronCalcEditor'), { 
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
 
 export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
   const { isDesktop } = useResponsiveStore();
@@ -49,7 +53,6 @@ export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
         </Box>
       )}
       <Box
-        $maxWidth="868px"
         $width="100%"
         $height="100%"
         className="--docs--doc-editor"
@@ -77,7 +80,7 @@ export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
             {isVersion ? (
               <DocVersionEditor docId={doc.id} versionId={versionId} />
             ) : (
-              <BlockNoteEditor doc={doc} provider={provider} />
+              <IronCalcEditor doc={doc} provider={provider} />
             )}
           </Box>
         </Box>
