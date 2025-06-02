@@ -16,7 +16,7 @@ export const useTrans = () => {
     transRole: (role: Role) => {
       return translatedRoles[role];
     },
-    untitledDocument: t('Untitled document'),
+    untitledDocument: t('Untitled spreadsheet'),
     translatedRoles,
   };
 };

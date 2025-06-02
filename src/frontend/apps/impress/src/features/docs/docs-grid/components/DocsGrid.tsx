@@ -48,10 +48,10 @@ export const DocsGrid = ({
 
   const title =
     target === DocDefaultFilter.MY_DOCS
-      ? t('My docs')
+      ? t('My spreadsheets')
       : target === DocDefaultFilter.SHARED_WITH_ME
         ? t('Shared with me')
-        : t('All docs');
+        : t('All spreadsheets');
 
   return (
     <Box
@@ -132,7 +132,7 @@ export const DocsGrid = ({
                     onClick={() => void fetchNextPage()}
                     color="primary-text"
                   >
-                    {t('More docs')}
+                    {t('More spreadsheets')}
                   </Button>
                 )}
               </InView>

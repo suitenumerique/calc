@@ -82,7 +82,7 @@ export const LeftPanelHeader = ({ children }: PropsWithChildren) => {
             </Box>
             {authenticated && (
               <Button onClick={createNewDoc} disabled={isCreatingDoc}>
-                {t('New doc')}
+                {t('New spreadsheet')}
               </Button>
             )}
           </Box>

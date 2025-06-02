@@ -24,12 +24,12 @@ export const LeftPanelTargetFilters = () => {
   const defaultQueries = [
     {
       icon: 'apps',
-      label: t('All docs'),
+      label: t('All spreadsheets'),
       targetQuery: DocDefaultFilter.ALL_DOCS,
     },
     {
       icon: 'lock',
-      label: t('My docs'),
+      label: t('My spreadsheets'),
       targetQuery: DocDefaultFilter.MY_DOCS,
     },
     {
