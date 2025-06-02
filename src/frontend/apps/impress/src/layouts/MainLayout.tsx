@@ -37,9 +37,7 @@ export function MainLayout({
           $flex={1}
           $width="100%"
           $height={`calc(100dvh - ${HEADER_HEIGHT}px)`}
-          $padding={{
-            all: isDesktop ? 'base' : '0',
-          }}
+          $padding="0"
           $background={
             currentBackgroundColor === 'white'
               ? colorsTokens['greyscale-000']

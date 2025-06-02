@@ -4,12 +4,7 @@ import { IronCalc, Model, init } from '@ironcalc/workbook';
 import { useEffect, useState } from 'react';
 
 import { Doc } from '@/features/docs/doc-management';
-
-// // import { base64ToBytes, bytesToBase64 } from "./ironcalc/AppComponents/util";
-// const {init, Model, IronCalc, IronCalcIcon, IronCalcLogo} = dynamic(
-//     () => import("@ironcalc/workbook"),
-//     { ssr: false }
-// );
+import { updateDoc } from '@/features/docs/doc-management/api/useUpdateDoc';
 
 const uint8ArrayToBase64 = (uint8Array: Uint8Array) => {
   const binString = Array.from(uint8Array, (byte) =>
@@ -56,17 +51,23 @@ export default function IronCalcEditor({
   useEffect(() => {
     init().then(
       () => {
-        //setWorkbookState(new WorkbookState());
-
+        // setWorkbookState(new WorkbookState());
+        console.log('IronCalc initialized');
+        console.log('Doc:', doc);
         // // TODO: Load existing content from server
-        // if (doc.content) {
-        //   try {
-        //     const bytes = base64ToBytes(doc.content);
-        //     return setModel(Model.from_bytes(bytes));
-        //   } catch (e) {
-        //     console.error('Failed to load existing content:', e);
-        //   }
-        // }
+        if (doc.content) {
+          try {
+            const bytes = new Uint8Array(
+              atob(doc.content)
+                .split('')
+                .map((c) => c.charCodeAt(0)),
+            );
+            console.log('Loading existing content:', bytes);
+            return setModel(Model.from_bytes(bytes));
+          } catch (e) {
+            console.error('Failed to load existing content:', e);
+          }
+        }
 
         // If no content or failed to load, create new model
         setModel(new Model('Workbook1', 'en', 'UTC'));
@@ -74,7 +75,7 @@ export default function IronCalcEditor({
       },
       () => {},
     );
-  }, [doc.content]);
+  }, [doc, doc.content]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -108,22 +109,39 @@ export default function IronCalcEditor({
         // model.addPreview(user) // Not implemented yet
       // }
 
-      // TODO: Ask the API for updates 
+      // TODO: Ask the API for updates
       // const latestVersion = api.getLatestVersion()
       // if (latestVersion.id !== currentVersion) {
 
       // }
 
-      const flushSendQueue = model.flushSendQueue();
-      if (flushSendQueue.length === 1 && flushSendQueue[0] === 0) {
-        return;
-      }
+      // const flushSendQueue = model.flushSendQueue();
+      // // console.log('Flush send queue:', flushSendQueue);
+      // if (flushSendQueue.length === 1 && flushSendQueue[0] === 0) {
+      //   return;
+      // }
+      // const binString = Array.from(flushSendQueue, (byte) =>
 
-      console.log(`New data : ${uint8ArrayToBase64(flushSendQueue)}`);
+      const modelBytes = model.toBytes();
+      const binString = Array.from(modelBytes, (byte) =>
+        String.fromCodePoint(byte),
+      ).join('');
+      const base64Content = btoa(binString);
+      console.log(`New data : ${base64Content}`);
+      doc.content = base64Content;
+      console.log('Doc:', doc);
+
+      // Call the save method with doc.id and the new content as base64
+      updateDoc({
+        id: doc.id,
+        content: base64Content,
+      }).catch((error) => {
+        console.error('Failed to update doc:', error);
+      });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [model]);
+  }, [doc, model]);
 
   return (model ?<div className="ironcalc-workbook" style={{ height: '100%' }}>
     <IronCalc model={model} />

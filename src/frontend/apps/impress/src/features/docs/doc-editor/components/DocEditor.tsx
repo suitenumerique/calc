@@ -33,11 +33,11 @@ export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
 
   const { colorsTokens } = useCunninghamTheme();
 
-  const { provider } = useProviderStore();
+  // const { provider } = useProviderStore();
 
-  if (!provider) {
-    return null;
-  }
+  // if (!provider) {
+  //   return null;
+  // }
 
   return (
     <>
