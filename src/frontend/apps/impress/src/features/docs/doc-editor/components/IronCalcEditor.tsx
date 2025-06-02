@@ -72,14 +72,12 @@ export default function IronCalcEditor({
   }, [doc.content]);
 
   useEffect(() => {
-    console.log('hook2');
-
     const interval = setInterval(() => {
       if (!model) {
         return;
       }
-      const flushSendQueue = model.flushSendQueue()
-      if (flushSendQueue.length === 0) {
+      const flushSendQueue = model.flushSendQueue();
+      if (flushSendQueue.length === 1 && flushSendQueue[0] === 0) {
         return;
       }
       const binString = Array.from(flushSendQueue, (byte) =>
@@ -94,6 +92,6 @@ export default function IronCalcEditor({
   return (model ?<div className="ironcalc-workbook" style={{ height: '100%' }}>
     <IronCalc model={model} />
   </div>:
-  <div>Loading...</div>);
-
+    <div>Loading...</div>
+  );
 }
