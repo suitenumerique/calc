@@ -1,4 +1,5 @@
 """Client serializers for the impress core app."""
+import logging
 
 import binascii
 import mimetypes
@@ -318,45 +319,50 @@ class DocumentSerializer(ListDocumentSerializer):
         Process the content field to extract attachment keys and update the document's
         "attachments" field for access control.
         """
+        logger = logging.getLogger(__name__)
+
         content = self.validated_data.get("content", "")
-        extracted_attachments = set(utils.extract_attachments(content))
+        logger.info(f"Processing content: {content}")
 
-        existing_attachments = (
-            set(self.instance.attachments or []) if self.instance else set()
-        )
-        new_attachments = extracted_attachments - existing_attachments
-
-        if new_attachments:
-            attachments_documents = (
-                models.Document.objects.filter(
-                    attachments__overlap=list(new_attachments)
-                )
-                .only("path", "attachments")
-                .order_by("path")
-            )
-
-            user = self.context["request"].user
-            readable_per_se_paths = (
-                models.Document.objects.readable_per_se(user)
-                .order_by("path")
-                .values_list("path", flat=True)
-            )
-            readable_attachments_paths = utils.filter_descendants(
-                [doc.path for doc in attachments_documents],
-                readable_per_se_paths,
-                skip_sorting=True,
-            )
-
-            readable_attachments = set()
-            for document in attachments_documents:
-                if document.path not in readable_attachments_paths:
-                    continue
-                readable_attachments.update(set(document.attachments) & new_attachments)
-
-            # Update attachments with readable keys
-            self.validated_data["attachments"] = list(
-                existing_attachments | readable_attachments
-            )
+        # Just don't for now TODO (not working because double-encoded to base64)
+        # extracted_attachments = set(utils.extract_attachments(content))
+        #
+        # existing_attachments = (
+        #     set(self.instance.attachments or []) if self.instance else set()
+        # )
+        # new_attachments = extracted_attachments - existing_attachments
+        #
+        # if new_attachments:
+        #     attachments_documents = (
+        #         models.Document.objects.filter(
+        #             attachments__overlap=list(new_attachments)
+        #         )
+        #         .only("path", "attachments")
+        #         .order_by("path")
+        #     )
+        #
+        #     user = self.context["request"].user
+        #     readable_per_se_paths = (
+        #         models.Document.objects.readable_per_se(user)
+        #         .order_by("path")
+        #         .values_list("path", flat=True)
+        #     )
+        #     readable_attachments_paths = utils.filter_descendants(
+        #         [doc.path for doc in attachments_documents],
+        #         readable_per_se_paths,
+        #         skip_sorting=True,
+        #     )
+        #
+        #     readable_attachments = set()
+        #     for document in attachments_documents:
+        #         if document.path not in readable_attachments_paths:
+        #             continue
+        #         readable_attachments.update(set(document.attachments) & new_attachments)
+        #
+        #     # Update attachments with readable keys
+        #     self.validated_data["attachments"] = list(
+        #         existing_attachments | readable_attachments
+        #     )
 
         return super().save(**kwargs)
 
