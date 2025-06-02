@@ -1,12 +1,14 @@
 """API endpoints"""
 # pylint: disable=too-many-lines
 
-import io
+import base64
 import json
 import logging
 import uuid
 from urllib.parse import unquote, urlencode, urlparse
 
+from django.http import FileResponse
+from django.core.files import File
 from django.conf import settings
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
@@ -39,6 +41,8 @@ from core.utils import extract_attachments, filter_descendants
 
 from . import permissions, serializers, utils
 from .filters import DocumentFilter, ListDocumentFilter
+
+import ironcalc as ic
 
 logger = logging.getLogger(__name__)
 
@@ -1424,23 +1428,24 @@ class DocumentViewSet(
         # Check permissions first
         print("Download xlsx")
         document = self.get_object()
-        print(document.get_content_response())
 
         try:
             response = document.get_content_response()
         except (FileNotFoundError, ClientError) as err:
             raise Http404 from err
         # TODO: Do not write the file to buffer, but stream it directly
+        print(response["Body"].read().decode("utf-8"))
+        bytes = ic.load_from_bytes(base64.b64decode(response["Body"].read().decode("utf-8")))
 
-        with open(io.BytesIO(response.get("Body").read()), "rb") as file:
-            # Create a response with the file content
+        # model = ic.load_from_icalc(f"{document.title}.xlsx")
+
+        # model.save_to_xlsx(f"{document.title}-1.xlsx")
+        with open(f"{document.title}.xlsx", "rb") as f:
+
             response = drf.response.Response(
-                file.read(),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                f.read(),
             )
-            response["Content-Disposition"] = f'attachment; filename="{document.title}.xlsx"'
-
-        return drf.response.Response(response, status=drf.status.HTTP_200_OK)
+        return response
 
     @drf.decorators.action(
         detail=True,

@@ -1,14 +1,14 @@
 # Django impress
 
 # ---- base image to inherit from ----
-FROM python:3.13.3-alpine AS base
+FROM python:3.13.3-slim AS base
 
 # Upgrade pip to its latest release to speed up dependencies installation
 RUN python -m pip install --upgrade pip setuptools
 
 # Upgrade system packages to install security updates
-RUN apk update && \
-  apk upgrade
+RUN apt update && \
+  apt full-upgrade -y
 
 # ---- Back-end builder image ----
 FROM base AS back-builder
@@ -16,11 +16,6 @@ FROM base AS back-builder
 WORKDIR /builder
 
 # Install Rust and Cargo using Alpine's package manager
-RUN apk add --no-cache \
-  build-base \
-  libffi-dev \
-  rust \
-  cargo
 
 # Copy required python dependencies
 COPY ./src/backend /builder
@@ -45,8 +40,11 @@ FROM base AS link-collector
 ARG IMPRESS_STATIC_ROOT=/data/static
 
 # Install pango & rdfind
-RUN apk add \
-  pango \
+# RUN apk add \
+#   pango \
+#   rdfind
+
+RUN apt install -y \
   rdfind
 
 # Copy installed python dependencies
@@ -70,20 +68,9 @@ FROM base AS core
 
 ENV PYTHONUNBUFFERED=1
 
-# Install required system libs
-RUN apk add \
-  cairo \
-  file \
-  font-noto \
-  font-noto-emoji \
-  gettext \
-  gdk-pixbuf \
-  libffi-dev \
-  pango \
-  shared-mime-info
 
-RUN wget https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types -O /etc/mime.types
-
+# RUN wget https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types -O /etc/mime.types
+RUN apt install gettext -y
 # Copy entrypoint
 COPY ./docker/files/usr/local/bin/entrypoint /usr/local/bin/entrypoint
 
@@ -117,7 +104,7 @@ FROM core AS backend-development
 USER root:root
 
 # Install psql
-RUN apk add postgresql-client
+RUN apt install postgresql-common libmagic-dev libmagic1 -y
 
 # Uninstall impress and re-install it in editable mode along with development
 # dependencies
@@ -140,7 +127,7 @@ CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 FROM core AS backend-production
 
 # Remove apk cache, we don't need it anymore
-RUN rm -rf /var/cache/apk/*
+# RUN rm -rf /var/cache/apk/*
 
 ARG IMPRESS_STATIC_ROOT=/data/static
 
