@@ -11,6 +11,14 @@ import { Doc } from '@/features/docs/doc-management';
 //     { ssr: false }
 // );
 
+const uint8ArrayToBase64 = (uint8Array: Uint8Array) => {
+  const binString = Array.from(uint8Array, (byte) =>
+    String.fromCodePoint(byte),
+  ).join('');
+  return btoa(binString);
+}
+
+
 interface IronCalcEditorProps {
   doc: Doc;
   //provider: HocuspocusProvider;
@@ -22,9 +30,6 @@ export default function IronCalcEditor({
 }: IronCalcEditorProps) {
   const [model, setModel] = useState<Model | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
-  const [workbookData, setWorkbookData] = useState<Uint8Array>(
-    new Uint8Array([0])
-  )
 
 
   // const isVersion = doc.id !== storeId;
@@ -76,14 +81,45 @@ export default function IronCalcEditor({
       if (!model) {
         return;
       }
+
+      const myCell = model.getSelectedCell();
+      console.log(`Selected cell ${myCell}`);
+
+      // TODO: Update the selected cell on the API with (clientId, ...[cell])
+
+      // TODO: Get the list of users on the API
+      // const users = [
+      //   {
+      //     "uid": "2b6e17f0-08be-4584-8c54-0be355acda00",
+      //     "sheet": 0,
+      //     "column": 1,
+      //     "row": 1,
+      //   },
+      //   {
+      //     "uid": "7e36148b-380f-4180-bb66-58d573a8473d",
+      //     "sheet": 0,
+      //     "column": 4,
+      //     "row": 6,
+      //   },
+      // ]
+
+      // TODO: Display the users on sheet
+      // for (user in user) {
+        // model.addPreview(user) // Not implemented yet
+      // }
+
+      // TODO: Ask the API for updates 
+      // const latestVersion = api.getLatestVersion()
+      // if (latestVersion.id !== currentVersion) {
+
+      // }
+
       const flushSendQueue = model.flushSendQueue();
       if (flushSendQueue.length === 1 && flushSendQueue[0] === 0) {
         return;
       }
-      const binString = Array.from(flushSendQueue, (byte) =>
-        String.fromCodePoint(byte),
-      ).join("");
-      console.log(`New data : ${btoa(binString)}`)
+
+      console.log(`New data : ${uint8ArrayToBase64(flushSendQueue)}`);
     }, 1000);
 
     return () => clearInterval(interval);
