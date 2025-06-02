@@ -59,14 +59,14 @@ export default function IronCalcEditor({
         //setWorkbookState(new WorkbookState());
 
         // // TODO: Load existing content from server
-        if (doc.content) {
-          try {
-            const bytes = base64ToBytes(doc.content);
-            return setModel(Model.from_bytes(bytes));
-          } catch (e) {
-            console.error('Failed to load existing content:', e);
-          }
-        }
+        // if (doc.content) {
+        //   try {
+        //     const bytes = base64ToBytes(doc.content);
+        //     return setModel(Model.from_bytes(bytes));
+        //   } catch (e) {
+        //     console.error('Failed to load existing content:', e);
+        //   }
+        // }
 
         // If no content or failed to load, create new model
         setModel(new Model('Workbook1', 'en', 'UTC'));
