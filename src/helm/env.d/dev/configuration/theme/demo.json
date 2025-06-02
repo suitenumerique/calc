@@ -2,7 +2,7 @@
   "footer": {
     "default": {
       "logo": {
-        "src": "/assets/icon-docs.svg",
+        "src": "/assets/icon-calc.svg",
         "width": "54px",
         "alt": "Docs Logo",
         "withTitle": true

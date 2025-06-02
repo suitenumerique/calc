@@ -24,7 +24,7 @@ export const Title = () => {
         $zIndex={1}
         $size="1.375rem"
       >
-        {t('Docs')}
+        {t('Calc')}
       </Text>
       {isBeta && (
         <Text

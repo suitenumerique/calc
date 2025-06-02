@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
-import IconDocs from '@/assets/icons/icon-docs.svg';
+import IconDocs from '@/assets/icons/icon-calc.svg';
 import { Box, StyledLink } from '@/components/';
 import { useCunninghamTheme } from '@/cunningham';
 import { ButtonLogin } from '@/features/auth';

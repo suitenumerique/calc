@@ -25,7 +25,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       <Head>
-        <title>{t('Docs')}</title>
+        <title>{t('Calc')}</title>
         <meta
           name="description"
           content={t(

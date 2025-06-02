@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import IconDocs from '@/assets/icons/icon-docs.svg';
+import IconDocs from '@/assets/icons/icon-calc.svg';
 import { Box, Text } from '@/components';
 import { useCunninghamTheme } from '@/cunningham';
 import { ProConnectButton } from '@/features/auth';

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
-import IconDocs from '@/assets/icons/icon-docs.svg';
+import IconDocs from '@/assets/icons/icon-calc.svg';
 import { Box } from '@/components';
 import { useCunninghamTheme } from '@/cunningham';
 import { ButtonTogglePanel, Title } from '@/features/header/';

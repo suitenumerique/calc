@@ -70,7 +70,7 @@ const DocPage = ({ id }: DocProps) => {
   useEffect(() => {
     if (doc?.title) {
       setTimeout(() => {
-        document.title = `${doc.title} - ${t('Docs')}`;
+        document.title = `${doc.title} - ${t('Calc')}`;
       }, 100);
     }
   }, [doc?.title, t]);

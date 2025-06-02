@@ -5,6 +5,7 @@
       "All docs": "An holl restroù",
       "Anonymous": "Dianav",
       "Beautify": "Bravaat",
+      "Calc": "Calc",
       "Cancel": "Nullañ",
       "Connected": "Kevreet",
       "Correct": "Reizhañ",
@@ -60,6 +61,7 @@
       "Available soon": "Bald verfügbar",
       "Banner image": "Bannerbild",
       "Beautify": "Verschönern",
+      "Calc": "Calc",
       "Can't load this page, please check your internet connection.": "Diese Seite kann nicht geladen werden. Bitte überprüfen Sie Ihre Internetverbindung.",
       "Cancel": "Abbrechen",
       "Close the modal": "Pop up schliessen",
@@ -220,6 +222,7 @@
   },
   "en": {
     "translation": {
+      "Calc": "Calc",
       "Share with {{count}} users_one": "Share with {{count}} user",
       "Shared with {{count}} users_many": "Shared with {{count}} users",
       "Shared with {{count}} users_one": "Shared with {{count}} user",
@@ -250,6 +253,7 @@
       "Available soon": "Próximamente disponible",
       "Banner image": "Imagen de portada",
       "Beautify": "Embellecer",
+      "Calc": "Calc",
       "Callout": "Destacado",
       "Can't load this page, please check your internet connection.": "No se puede cargar esta página, por favor compruebe su conexión a Internet.",
       "Cancel": "Cancelar",
@@ -434,6 +438,7 @@
       "Available soon": "Disponible prochainement",
       "Banner image": "Image de la bannière",
       "Beautify": "Embellir",
+      "Calc": "Calc",
       "Callout": "Alerte",
       "Can't load this page, please check your internet connection.": "Impossible de charger cette page, veuillez vérifier votre connexion Internet.",
       "Cancel": "Annuler",
@@ -623,6 +628,7 @@
       "Available soon": "Presto disponibile",
       "Banner image": "Immagine del banner",
       "Beautify": "Filtro bellezza",
+      "Calc": "Calc",
       "Can't load this page, please check your internet connection.": "Impossibile caricare questa pagina, controlla la tua connessione internet.",
       "Cancel": "Cancella",
       "Collaborate": "Collabora",
@@ -779,6 +785,7 @@
       "Available soon": "Binnenkort beschikbaar",
       "Banner image": "Banner afbeelding",
       "Beautify": "Maak mooier",
+      "Calc": "Calc",
       "Can't load this page, please check your internet connection.": "Kan deze pagina niet laden. Controleer je internetverbinding.",
       "Cancel": "Breek af",
       "Close the modal": "Sluit het venster",
@@ -940,6 +947,7 @@
   "pt": { "translation": {} },
   "sl": {
     "translation": {
+      "Calc": "Calc",
       "Load more": "Naloži več",
       "Untitled document": "Dokument brez naslova"
     }
@@ -951,6 +959,7 @@
       "Add a horizontal line": "Lägg till en horisontell linje",
       "Anonymous": "Anonym",
       "Beautify": "Försköna",
+      "Calc": "Calc",
       "Cancel": "Avbryt",
       "Close the modal": "Stäng fönstret",
       "Convert Markdown": "Konvertera Markdown",
@@ -988,6 +997,7 @@
       "Available soon": "Çok yakında!",
       "Banner image": "Afiş görseli",
       "Beautify": "Güzelleştir",
+      "Calc": "Calc",
       "Cancel": "İptal",
       "Collaborate": "İşbirliği Yapın",
       "Collaborate and write in real time, without layout constraints.": "Düzen kısıtlamaları olmadan gerçek zamanlı olarak işbirliği yapın ve yazın.",
@@ -1075,6 +1085,7 @@
       "Available soon": "即将推出",
       "Banner image": "Banner图像",
       "Beautify": "美化",
+      "Calc": "Calc",
       "Callout": "标注",
       "Can't load this page, please check your internet connection.": "无法加载此页面，请检查您的网络连接。",
       "Cancel": "取消",

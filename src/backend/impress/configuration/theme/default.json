@@ -2,15 +2,15 @@
   "footer": {
     "default": {
       "logo": {
-        "src": "/assets/icon-docs.svg",
+        "src": "/assets/icon-calc.svg",
         "width": "54px",
-        "alt": "Docs Logo",
+        "alt": "Calc Logo",
         "withTitle": true
       },
       "externalLinks": [
         {
           "label": "Github",
-          "href": "https://github.com/suitenumerique/docs/"
+          "href": "https://github.com/suitenumerique/calc/"
         },
         {
           "label": "DINUM",
