@@ -19,14 +19,13 @@ import { useEditorStore } from '@/docs/doc-editor';
 import { Doc, useTrans } from '@/docs/doc-management';
 
 import { exportCorsResolveFileUrl } from '../api/exportResolveFileUrl';
-import { TemplatesOrdering, useTemplates } from '../api/useTemplates';
 import { docxDocsSchemaMappings } from '../mappingDocx';
 import { pdfDocsSchemaMappings } from '../mappingPDF';
 import { downloadFile } from '../utils';
 
 enum DocDownloadFormat {
-  PDF = 'pdf',
-  DOCX = 'docx',
+  XLSX = 'xlsx',
+  ICAL = 'ical',
 }
 
 interface ModalExportProps {
@@ -36,35 +35,13 @@ interface ModalExportProps {
 
 export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
   const { t } = useTranslation();
-  const { data: templates } = useTemplates({
-    ordering: TemplatesOrdering.BY_CREATED_ON_DESC,
-  });
   const { toast } = useToastProvider();
   const { editor } = useEditorStore();
-  const [templateSelected, setTemplateSelected] = useState<string>('');
   const [isExporting, setIsExporting] = useState(false);
   const [format, setFormat] = useState<DocDownloadFormat>(
-    DocDownloadFormat.PDF,
+    DocDownloadFormat.XLSX,
   );
   const { untitledDocument } = useTrans();
-
-  const templateOptions = useMemo(() => {
-    const templateOptions = (templates?.pages || [])
-      .map((page) =>
-        page.results.map((template) => ({
-          label: template.title,
-          value: template.code,
-        })),
-      )
-      .flat();
-
-    templateOptions.unshift({
-      label: t('Empty template'),
-      value: '',
-    });
-
-    return templateOptions;
-  }, [t, templates?.pages]);
 
   async function onSubmit() {
     if (!editor) {
@@ -80,13 +57,8 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/\s/g, '-');
 
-    const html = templateSelected;
     let exportDocument = editor.document;
-    if (html) {
-      const blockTemplate = await editor.tryParseHTMLToBlocks(html);
-      exportDocument = [...blockTemplate, ...editor.document];
-    }
-
+    
     let blobExport: Blob;
     if (format === DocDownloadFormat.PDF) {
       const exporter = new PDFExporter(editor.schema, pdfDocsSchemaMappings, {
@@ -161,26 +133,14 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
         className="--docs--modal-export-content"
       >
         <Text $variation="600" $size="sm">
-          {t('Download your document in a .docx or .pdf format.')}
+          {t('Download your document in a .xlsx format.')}
         </Text>
-        <Select
-          clearable={false}
-          fullWidth
-          label={t('Template')}
-          options={templateOptions}
-          value={templateSelected}
-          onChange={(options) =>
-            setTemplateSelected(options.target.value as string)
-          }
-        />
+        
         <Select
           clearable={false}
           fullWidth
           label={t('Format')}
-          options={[
-            { label: t('Docx'), value: DocDownloadFormat.DOCX },
-            { label: t('PDF'), value: DocDownloadFormat.PDF },
-          ]}
+          options={[{ label: t('Docx'), value: DocDownloadFormat.XLSX }]}
           value={format}
           onChange={(options) =>
             setFormat(options.target.value as DocDownloadFormat)

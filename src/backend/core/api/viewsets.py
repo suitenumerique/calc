@@ -1,6 +1,7 @@
 """API endpoints"""
 # pylint: disable=too-many-lines
 
+import io
 import json
 import logging
 import uuid
@@ -399,6 +400,8 @@ class DocumentViewSet(
         - language (str): The target language, chosen from settings.LANGUAGES.
         Returns: JSON response with the translated text.
         Throttled by: AIDocumentRateThrottle, AIUserRateThrottle.
+
+    12. **Download**: Download a document in xlsx format.
 
     ### Ordering: created_at, updated_at, is_favorite, title
 
@@ -1403,6 +1406,39 @@ class DocumentViewSet(
         language = serializer.validated_data["language"]
 
         response = AIService().translate(text, language)
+
+        return drf.response.Response(response, status=drf.status.HTTP_200_OK)
+
+    @drf.decorators.action(
+        detail=True,
+        methods=["get"],
+        name="Download a file in xlsx",
+        url_path="download",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def download_xlsx(self, request, *args, **kwargs):
+        """
+        POST /api/v1.0/documents/<resource_id>/download
+        Return the file in xlsx format.
+        """
+        # Check permissions first
+        print("Download xlsx")
+        document = self.get_object()
+        print(document.get_content_response())
+
+        try:
+            response = document.get_content_response()
+        except (FileNotFoundError, ClientError) as err:
+            raise Http404 from err
+        # TODO: Do not write the file to buffer, but stream it directly
+
+        with open(io.BytesIO(response.get("Body").read()), "rb") as file:
+            # Create a response with the file content
+            response = drf.response.Response(
+                file.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{document.title}.xlsx"'
 
         return drf.response.Response(response, status=drf.status.HTTP_200_OK)
 
