@@ -23,6 +23,10 @@ import { docxDocsSchemaMappings } from '../mappingDocx';
 import { pdfDocsSchemaMappings } from '../mappingPDF';
 import { downloadFile } from '../utils';
 
+import { downloadDoc } from '@/features/docs/doc-management/api/useDownloadDoc';
+
+import {fs} from 'fs';
+
 enum DocDownloadFormat {
   XLSX = 'xlsx',
   ICAL = 'ical',
@@ -44,41 +48,9 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
   const { untitledDocument } = useTrans();
 
   async function onSubmit() {
-    if (!editor) {
-      toast(t('The export failed'), VariantType.ERROR);
-      return;
-    }
 
     setIsExporting(true);
-
-    const title = (doc.title || untitledDocument)
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s/g, '-');
-
-    let exportDocument = editor.document;
-    
-    let blobExport: Blob;
-    if (format === DocDownloadFormat.PDF) {
-      const exporter = new PDFExporter(editor.schema, pdfDocsSchemaMappings, {
-        resolveFileUrl: async (url) => exportCorsResolveFileUrl(doc.id, url),
-      });
-      const pdfDocument = (await exporter.toReactPDFDocument(
-        exportDocument,
-      )) as React.ReactElement<DocumentProps>;
-
-      blobExport = await pdf(pdfDocument).toBlob();
-    } else {
-      const exporter = new DOCXExporter(editor.schema, docxDocsSchemaMappings, {
-        resolveFileUrl: async (url) => exportCorsResolveFileUrl(doc.id, url),
-      });
-
-      blobExport = await exporter.toBlob(exportDocument);
-    }
-
-    downloadFile(blobExport, `${title}.${format}`);
-
+    const download = await downloadDoc({ id: doc.id });
     toast(
       t('Your {{format}} was downloaded succesfully', {
         format,
@@ -140,7 +112,7 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
           clearable={false}
           fullWidth
           label={t('Format')}
-          options={[{ label: t('Docx'), value: DocDownloadFormat.XLSX }]}
+          options={[{ label: t('Xlsx'), value: DocDownloadFormat.XLSX }]}
           value={format}
           onChange={(options) =>
             setFormat(options.target.value as DocDownloadFormat)

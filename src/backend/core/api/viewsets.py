@@ -5,6 +5,8 @@ import base64
 import json
 import logging
 import uuid
+import tempfile
+import os
 from urllib.parse import unquote, urlencode, urlparse
 
 from django.http import FileResponse
@@ -1434,18 +1436,15 @@ class DocumentViewSet(
         except (FileNotFoundError, ClientError) as err:
             raise Http404 from err
         # TODO: Do not write the file to buffer, but stream it directly
-        print(response["Body"].read().decode("utf-8"))
-        bytes = ic.load_from_bytes(base64.b64decode(response["Body"].read().decode("utf-8")))
+        bytes_response = response["Body"].read().decode("utf-8")
+        model = ic.load_from_bytes(base64.b64decode(bytes_response))
+        tmpFilePath = os.path.join(tempfile.mkdtemp(), 'file.xlsx')
+        model.save_to_xlsx(tmpFilePath)
 
         # model = ic.load_from_icalc(f"{document.title}.xlsx")
 
         # model.save_to_xlsx(f"{document.title}-1.xlsx")
-        with open(f"{document.title}.xlsx", "rb") as f:
-
-            response = drf.response.Response(
-                f.read(),
-            )
-        return response
+        return FileResponse(open(tmpFilePath, "rb"))
 
     @drf.decorators.action(
         detail=True,
