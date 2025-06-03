@@ -53,8 +53,6 @@ logger = logging.getLogger(__name__)
 from django import forms
 
 
-class UploadFileForm(forms.Form):
-    file = forms.FileField()
 class NestedGenericViewSet(viewsets.GenericViewSet):
     """
     A generic Viewset aims to be used in a nested route context.
@@ -1467,8 +1465,6 @@ class DocumentViewSet(
         # Check permissions first
         print("Upload xlsx")
         document = self.get_object()
-
-        form = UploadFileForm(request.POST, request.FILES)
 
         # Validate metadata in payload
         serializer = serializers.FileUploadSerializer(data=request.data)
