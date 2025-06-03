@@ -741,3 +741,20 @@ class MoveDocumentSerializer(serializers.Serializer):
         choices=enums.MoveNodePositionChoices.choices,
         default=enums.MoveNodePositionChoices.LAST_CHILD,
     )
+
+class ActiveUserSerializer(serializers.Serializer):
+    """
+    Serialize link configuration for documents.
+    We expose it separately from document in order to simplify and secure access control.
+    """
+
+    user_email = serializers.EmailField(required=True)
+    sheet_index = serializers.IntegerField(
+        required=True, min_value=0
+    )
+    row_index = serializers.IntegerField(
+        required=True, min_value=1
+    )
+    column_index = serializers.IntegerField(
+        required=True, min_value=1
+    )

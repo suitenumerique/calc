@@ -7,6 +7,8 @@ import logging
 import uuid
 import tempfile
 import os
+import redis
+
 from urllib.parse import unquote, urlencode, urlparse
 
 from django.http import FileResponse
@@ -27,6 +29,7 @@ from django.urls import reverse
 from django.utils.text import capfirst, slugify
 from django.utils.translation import gettext_lazy as _
 
+import redis.connection
 import requests
 import rest_framework as drf
 from botocore.exceptions import ClientError
@@ -408,6 +411,10 @@ class DocumentViewSet(
         Throttled by: AIDocumentRateThrottle, AIUserRateThrottle.
 
     12. **Download**: Download a document in xlsx format.
+
+    13. **List Document active users**: List document active users.
+
+    14. **Update document active user**: Add or update a document active user.
 
     ### Ordering: created_at, updated_at, is_favorite, title
 
@@ -1445,6 +1452,72 @@ class DocumentViewSet(
 
         # model.save_to_xlsx(f"{document.title}-1.xlsx")
         return FileResponse(open(tmpFilePath, "rb"))
+
+    @drf.decorators.action(
+        detail=True,
+        methods=["get"],
+        name="List active users",
+        url_path="active-users",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def list_active_users(self, request, *args, **kwargs):
+
+        """
+        GET /api/v1.0/documents/<resource_id>/active-users
+        Return the list of active users in the document.
+        """
+        # Check permissions first
+        document = self.get_object()
+        r = redis.Redis(host='redis', port=6379, decode_responses=True)
+
+
+        active_users = json.loads(r.get(
+            f"document_active_users_{document.id}"
+        ) or "{}")
+
+        return drf.response.Response(active_users, status=drf.status.HTTP_200_OK)
+
+    @drf.decorators.action(
+        detail=True,
+        methods=["post"],
+        serializer_class=serializers.ActiveUserSerializer,
+        name="Add active user",
+        url_path="active-user",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def add_active_user(self, request, *args, **kwargs):
+
+        """
+        POST /api/v1.0/documents/<resource_id>/active-user
+        Return the list of active users in the document.
+        """
+        # Check permissions first
+        document = self.get_object()
+
+        r = redis.Redis(host='redis', port=6379, decode_responses=True)
+
+        serializer = serializers.ActiveUserSerializer(data=request.data)
+        if not serializer.is_valid():
+            return drf_response.Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        validated_data = serializer.validated_data
+
+        current_active_users = {
+            validated_data["user_email"]: validated_data
+        }
+
+        previous_active_users = json.loads(r.get(
+            f"document_active_users_{document.id}"
+        ) or "{}")
+
+        print({**previous_active_users, **current_active_users})
+
+        r.set(f"document_active_users_{document.id}", json.dumps({**previous_active_users, **current_active_users}))
+
+        return drf.response.Response({}, status=drf.status.HTTP_200_OK)
+
 
     @drf.decorators.action(
         detail=True,
