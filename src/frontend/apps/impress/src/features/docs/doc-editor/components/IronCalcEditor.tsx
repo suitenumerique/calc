@@ -118,10 +118,10 @@ export default function IronCalcEditor({
       const flushSendQueue = model.flushSendQueue();
       // console.log('Flush send queue:', flushSendQueue);
       if (!(flushSendQueue.length === 1 && flushSendQueue[0] === 0)) {
-        const base64Content = uint8ArrayToBase64(model.toBytes());
-        console.log(`New data : ${base64Content}`);
-        doc.content = base64Content;
-        console.log('Doc:', doc);
+        const base64Content = uint8ArrayToBase64(flushSendQueue);
+        // console.log(`New data : ${base64Content}`);
+        // doc.content = base64Content;
+        // console.log('Doc:', doc);
         // Call the save method with doc.id and the new content as base64
         updateDoc({
           id: doc.id,
