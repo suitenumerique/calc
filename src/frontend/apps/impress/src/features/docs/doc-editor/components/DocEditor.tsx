@@ -27,6 +27,12 @@ export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
 
   const { colorsTokens } = useCunninghamTheme();
 
+  setTimeout(() => {
+    // Remove the IronCalc link from the editor
+    document
+      .querySelectorAll('a[href="https://www.ironcalc.com"]')
+      .forEach((s) => s.remove());
+  }, 500);
 
   return (
     <>
