@@ -115,29 +115,21 @@ export default function IronCalcEditor({
 
       // }
 
-      // const flushSendQueue = model.flushSendQueue();
-      // // console.log('Flush send queue:', flushSendQueue);
-      // if (flushSendQueue.length === 1 && flushSendQueue[0] === 0) {
-      //   return;
-      // }
-      // const binString = Array.from(flushSendQueue, (byte) =>
-
-      const modelBytes = model.toBytes();
-      const binString = Array.from(modelBytes, (byte) =>
-        String.fromCodePoint(byte),
-      ).join('');
-      const base64Content = btoa(binString);
-      console.log(`New data : ${base64Content}`);
-      doc.content = base64Content;
-      console.log('Doc:', doc);
-
-      // Call the save method with doc.id and the new content as base64
-      updateDoc({
-        id: doc.id,
-        content: base64Content,
-      }).catch((error) => {
-        console.error('Failed to update doc:', error);
-      });
+      const flushSendQueue = model.flushSendQueue();
+      // console.log('Flush send queue:', flushSendQueue);
+      if (!(flushSendQueue.length === 1 && flushSendQueue[0] === 0)) {
+        const base64Content = uint8ArrayToBase64(model.toBytes());
+        console.log(`New data : ${base64Content}`);
+        doc.content = base64Content;
+        console.log('Doc:', doc);
+        // Call the save method with doc.id and the new content as base64
+        updateDoc({
+          id: doc.id,
+          content: base64Content,
+        }).catch((error) => {
+          console.error('Failed to update doc:', error);
+        });
+      }
     }, 1000);
 
     return () => clearInterval(interval);
