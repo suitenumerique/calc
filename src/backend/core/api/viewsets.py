@@ -658,6 +658,12 @@ class DocumentViewSet(
             if diffs:
                 # Update the document content
                 document = self.get_object()
+                # TODO: not working because revision is always None - why?
+                # revision = serializer.validated_data.get("revision", None)
+                # if revision and document.revision != revision:
+                #     raise drf.exceptions.ValidationError(
+                #         {"revision": "Revision mismatch. Please refresh the document."}
+                #     )
                 document.update_model(diffs)
                 document.save()
                 logger.info(f"Updated document with ID: {document.pk}")

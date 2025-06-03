@@ -3,8 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { APIError, errorCauses, fetchAPI } from '@/api';
 import { Doc } from '@/features/docs';
 
-export type UpdateDocParams = Pick<Doc, 'id'> &
-  Partial<Pick<Doc, 'content' | 'title'>>;
+export type UpdateDocParams =
+  | (Pick<Doc, 'id'> & { content: string; revision: number })
+  | (Pick<Doc, 'id'> & { title: string });
 
 export const updateDoc = async ({
   id,

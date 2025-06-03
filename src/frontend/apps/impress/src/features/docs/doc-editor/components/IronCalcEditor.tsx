@@ -119,16 +119,18 @@ export default function IronCalcEditor({
       // console.log('Flush send queue:', flushSendQueue);
       if (!(flushSendQueue.length === 1 && flushSendQueue[0] === 0)) {
         const base64Content = uint8ArrayToBase64(flushSendQueue);
-        // console.log(`New data : ${base64Content}`);
-        // doc.content = base64Content;
-        // console.log('Doc:', doc);
-        // Call the save method with doc.id and the new content as base64
         updateDoc({
           id: doc.id,
           content: base64Content,
-        }).catch((error) => {
-          console.error('Failed to update doc:', error);
-        });
+          revision: doc.revision,
+        })
+          .then((updatedDoc) => {
+            // Update doc.revision with the value from the server
+            doc.revision = updatedDoc.revision;
+          })
+          .catch((error) => {
+            console.error('Failed to update doc:', error);
+          });
       }
     }, 1000);
 
