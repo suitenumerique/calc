@@ -1882,10 +1882,10 @@
   resolved "https://registry.yarnpkg.com/@ironcalc/wasm/-/wasm-0.5.3.tgz#6f9a4fd0ac7696fe46c2dddb553a12cc666cbd3f"
   integrity sha512-ryQKR5ISkSQnnsxBYDnrAUN+GDiAQUx0MzkVpJr7VQXiymOSMZbHfpv5geum1eSJV4gw1ft69syuNolIhVZ4Hg==
 
-"@ironcalc/workbook@0.5.4":
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/@ironcalc/workbook/-/workbook-0.5.4.tgz#2a3de0960a7f9a363b684a6ed3a9ab8c0d844991"
-  integrity sha512-apXCzAXHyXjIR84QqQmH8PjAHazF4RK88hcOgLnBIyCZCTjiVG4BFqzCRFsKZ7DLf2gOgD+6VJ/+lSqyxQBltQ==
+"@ironcalc/workbook@0.5.5":
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/@ironcalc/workbook/-/workbook-0.5.5.tgz#8bda14cf438da629a1146881e780f5afdf2150d4"
+  integrity sha512-v5mdxkxCey1SA2/vHpa7Q9pqD0lB5f9hRNMG6kz+xCvXerNqOKTpVECWmPCI8EYfFl6vjkdP70/06FOjhmliHg==
   dependencies:
     "@emotion/react" "^11.14.0"
     "@emotion/styled" "^11.14.0"

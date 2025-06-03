@@ -53,7 +53,6 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-ancestors
 
-
 class NestedGenericViewSet(viewsets.GenericViewSet):
     """
     A generic Viewset aims to be used in a nested route context.
@@ -412,9 +411,11 @@ class DocumentViewSet(
 
     12. **Download**: Download a document in xlsx format.
 
-    13. **List Document active users**: List document active users.
+    13. **Upload**: Upload a document in xlsx format.
 
-    14. **Update document active user**: Add or update a document active user.
+    14. **List Document active users**: List document active users.
+
+    15. **Update document active user**: Add or update a document active user.
 
     ### Ordering: created_at, updated_at, is_favorite, title
 
@@ -1452,6 +1453,51 @@ class DocumentViewSet(
 
         # model.save_to_xlsx(f"{document.title}-1.xlsx")
         return FileResponse(open(tmpFilePath, "rb"))
+
+    @drf.decorators.action(
+        detail=True,
+        methods=["post"],
+        name="Upload a file in xlsx",
+        url_path="upload",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def upload_xlsx(self, request, *args, **kwargs):
+        """
+        POST /api/v1.0/documents/<resource_id>/upload
+        Return the file in xlsx format.
+        """
+        # Check permissions first
+        print("Upload xlsx")
+        document = self.get_object()
+
+        # Validate metadata in payload
+        serializer = serializers.FileUploadSerializer(data=request.data)
+        print(request.__dict__)
+        print("here")
+
+        serializer.is_valid(raise_exception=True)
+        print("here2")
+        # Generate a generic yet unique filename to store the image in object storage
+        
+        file_name = serializer.validated_data["file_name"]
+        tmpFile = tempfile.NamedTemporaryFile(delete=False)
+        print(tmpFile)
+        file = serializer.validated_data["file"]
+        with open(tmpFile.name, "wb") as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+            f.seek(0)
+        model = ic.load_from_xlsx(tmpFile.name, "en", "UTC")
+        print(base64.b64encode(model.to_bytes()).decode("utf-8"))
+        document.content = base64.b64encode(model.to_bytes()).decode("utf-8")
+        document.save()     
+        # model = ic.load_from_icalc(f"{document.title}.xlsx")
+
+        # model.save_to_xlsx(f"{document.title}-1.xlsx")
+        return drf.response.Response(
+            {"message": "File uploaded successfully."},
+            status=drf.status.HTTP_201_CREATED,
+        )
 
     @drf.decorators.action(
         detail=True,

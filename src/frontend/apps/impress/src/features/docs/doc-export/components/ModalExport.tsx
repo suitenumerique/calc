@@ -41,7 +41,7 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
     setIsExporting(true);
     const download = await downloadDoc({ id: doc.id });
     toast(
-      t('Your {{format}} was downloaded succesfully', {
+      t('Your {{format}} was downloaded successfully', {
         format,
       }),
       VariantType.SUCCESS,
@@ -55,7 +55,9 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
     // Create a hidden <a> to trigger the “Save as…” dialog
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'file.xlsx';
+    a.download = doc.title
+      ? `${doc.title}.xlsx`
+      : 'Untitled Workbook.xlsx';
     document.body.appendChild(a);
     a.click();
     a.remove();
