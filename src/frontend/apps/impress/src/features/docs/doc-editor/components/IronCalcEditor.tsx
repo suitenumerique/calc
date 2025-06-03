@@ -1,22 +1,21 @@
 'use client';
 
-import { IronCalc, Model, init} from '@ironcalc/workbook';
+import { IronCalc, Model, init } from '@ironcalc/workbook';
 import { useEffect, useState } from 'react';
 
-import { Doc } from '@/features/docs/doc-management';
-import { updateDoc } from '@/features/docs/doc-management/api/useUpdateDoc';
-import { updateActiveUser } from '@/features/docs/doc-management/api/useUpdateActiveUser';
-import { listActiveUsers } from '@/features/docs/doc-management/api/useListActiveUsers';
 import { useAuthQuery } from '@/features/auth/api';
+import { Doc } from '@/features/docs/doc-management';
 import { useDoc } from '@/features/docs/doc-management/api/useDoc';
+import { listActiveUsers } from '@/features/docs/doc-management/api/useListActiveUsers';
+import { updateActiveUser } from '@/features/docs/doc-management/api/useUpdateActiveUser';
+import { updateDoc } from '@/features/docs/doc-management/api/useUpdateDoc';
 
 const uint8ArrayToBase64 = (uint8Array: Uint8Array) => {
   const binString = Array.from(uint8Array, (byte) =>
     String.fromCodePoint(byte),
   ).join('');
   return btoa(binString);
-}
-
+};
 
 interface IronCalcEditorProps {
   doc: Doc;
@@ -29,8 +28,21 @@ export default function IronCalcEditor({
 }: IronCalcEditorProps) {
   const [doc, setDoc] = useState<Doc>(initialDoc);
   const [model, setModel] = useState<Model | null>(null);
-  const [selectedCell, setSelectedCell] = useState<Int32Array[3]>(new Int32Array([0, 1, 1]));
-  const [activeUser, setActiveUsers] = useState<Record<string, {id: string, user_email: string, sheet_index: number, row_index: number, column_index: number}>>({});
+  const [selectedCell, setSelectedCell] = useState<Int32Array[3]>(
+    new Int32Array([0, 1, 1]),
+  );
+  const [activeUser, setActiveUsers] = useState<
+    Record<
+      string,
+      {
+        id: string;
+        user_email: string;
+        sheet_index: number;
+        row_index: number;
+        column_index: number;
+      }
+    >
+  >({});
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
 
   // Periodically fetch the latest doc
@@ -94,7 +106,6 @@ export default function IronCalcEditor({
 
         // If no content or failed to load, create new model
         setModel(new Model(title, 'en', 'UTC'));
-
       },
       () => {},
     );
@@ -115,48 +126,33 @@ export default function IronCalcEditor({
         if (currentCell[cellIndex] !== selectedCell[cellIndex]) {
           console.log(`Cell changed from ${selectedCell} to ${currentCell}`);
           setSelectedCell(currentCell);
-          updateActiveUser({id: doc.id, user_email: currentUser?.email, sheet_index: currentCell[0], row_index: currentCell[1], column_index: currentCell[2]}).catch((error) => {
+          updateActiveUser({
+            id: doc.id,
+            user_email: currentUser?.email,
+            sheet_index: currentCell[0],
+            row_index: currentCell[1],
+            column_index: currentCell[2],
+          }).catch((error) => {
             console.error('Failed to update active user:', error);
           });
           break;
         }
       }
-      
-      listActiveUsers({id: doc.id}).then((users) => {
-        setActiveUsers(users);
-        console.log('Active users:', users);
-      })
-      // const myCell = model.getSelectedCell();
-      // console.log(`Selected cell ${myCell}`);
 
-      // TODO: Update the selected cell on the API with (clientId, ...[cell])
+      void listActiveUsers({ id: doc.id }).then((users) => {
+        console.log(users['impress@impress.world']);
+        const updateModelObject = Object.values(users)
+          .filter((user) => user.user_email !== currentUser?.email)
+          .map((user) => ({
+            id: user.user_email,
+            sheet: user.sheet_index,
+            row: user.row_index,
+            column: user.column_index,
+          }));
 
-      // TODO: Get the list of users on the API
-      // const users = [
-      //   {
-      //     "uid": "2b6e17f0-08be-4584-8c54-0be355acda00",
-      //     "sheet": 0,
-      //     "column": 1,
-      //     "row": 1,
-      //   },
-      //   {
-      //     "uid": "7e36148b-380f-4180-bb66-58d573a8473d",
-      //     "sheet": 0,
-      //     "column": 4,
-      //     "row": 6,
-      //   },
-      // ]
-
-      // TODO: Display the users on sheet
-      // for (user in user) {
-        // model.addPreview(user) // Not implemented yet
-      // }
-
-      // TODO: Ask the API for updates
-      // const latestVersion = api.getLatestVersion()
-      // if (latestVersion.id !== currentVersion) {
-
-      // }
+        console.log(updateModelObject);
+        model.setUsers(updateModelObject || []);
+      });
 
       const flushSendQueue = model.flushSendQueue();
       // console.log('Flush send queue:', flushSendQueue);
@@ -177,27 +173,13 @@ export default function IronCalcEditor({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [doc, model, selectedCell, userInitialized, currentUser]);
+  }, [currentUser?.email, doc, model, selectedCell, userInitialized]);
 
-  useEffect(() => {
-      model?.setUsers(
-        Object.values(activeUser).map((user) => ({
-          id: user.user_email,
-          sheet: user.sheet_index,
-          row: user.row_index,
-          column: user.column_index,
-        })).filter(
-          (user) => user.id !== currentUser.email
-      ))
-    }, [activeUser])
-
-
-  return (model ?<div className="ironcalc-workbook" style={{ height: '100%' }}>
-    <IronCalc model={model} />
-  </div>:
+  return model ? (
+    <div className="ironcalc-workbook" style={{ height: '100%' }}>
+      <IronCalc model={model} />
+    </div>
+  ) : (
     <div>Loading...</div>
   );
-
-
 }
-

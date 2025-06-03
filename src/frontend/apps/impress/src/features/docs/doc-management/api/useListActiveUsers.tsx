@@ -9,7 +9,7 @@ export type ListActiveUsersParams = {
 
 export const listActiveUsers = async ({
   id,
-}: ListActiveUsersParams): Promise<Doc> => {
+}: ListActiveUsersParams): Promise<any> => {
   const response = await fetchAPI(`documents/${id}/active-users/`, {
     method: 'GET',
   });
