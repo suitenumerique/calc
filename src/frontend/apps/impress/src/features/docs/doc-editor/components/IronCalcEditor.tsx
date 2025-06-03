@@ -68,9 +68,10 @@ export default function IronCalcEditor({
             console.error('Failed to load existing content:', e);
           }
         }
+        const title = doc.title || 'Untitled Workbook';
 
         // If no content or failed to load, create new model
-        setModel(new Model('Workbook1', 'en', 'UTC'));
+        setModel(new Model(title, 'en', 'UTC'));
 
       },
       () => {},
@@ -122,6 +123,9 @@ export default function IronCalcEditor({
         console.log(`New data : ${base64Content}`);
         doc.content = base64Content;
         console.log('Doc:', doc);
+        if (doc.title && (doc.title !== model.getName())) {
+          model.setName(doc.title);
+        }
         // Call the save method with doc.id and the new content as base64
         updateDoc({
           id: doc.id,
