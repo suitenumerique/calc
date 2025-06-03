@@ -16,6 +16,7 @@ from socket import gethostbyname, gethostname
 
 from django.utils.translation import gettext_lazy as _
 
+import dj_database_url
 import sentry_sdk
 from configurations import Configuration, values
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -74,7 +75,9 @@ class Base(Configuration):
 
     # Database
     DATABASES = {
-        "default": {
+        "default": dj_database_url.config()
+        if os.environ.get("DATABASE_URL")
+        else {
             "ENGINE": values.Value(
                 "django.db.backends.postgresql_psycopg2",
                 environ_name="DB_ENGINE",
@@ -339,7 +342,6 @@ class Base(Configuration):
             # see all the data in the database (ie a serializer with a ForeignKey field
             # will generate a form with a field with all possible values of the FK).
             "rest_framework.renderers.JSONRenderer",
-            "rest_framework.renderers.BrowsableAPIRenderer",
         ],
         "EXCEPTION_HANDLER": "core.api.exception_handler",
         "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

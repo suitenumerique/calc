@@ -2673,9 +2673,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ironcalc/workbook@npm:0.5.4":
-  version: 0.5.4
-  resolution: "@ironcalc/workbook@npm:0.5.4"
+"@ironcalc/workbook@npm:0.5.5":
+  version: 0.5.5
+  resolution: "@ironcalc/workbook@npm:0.5.5"
   dependencies:
     "@emotion/react": "npm:^11.14.0"
     "@emotion/styled": "npm:^11.14.0"
@@ -2690,7 +2690,7 @@ __metadata:
     "@types/react": ^18.0.0 || ^19.0.0
     react: ^18.0.0 || ^19.0.0
     react-dom: ^18.0.0 || ^19.0.0
-  checksum: 10c0/185d07f2f3e719fb8f36653b9c8e6b05bd4fb8c22702e5245684be44b223db137a52bf2dc32ea807a89cc30d59a09d8ad033c93341c472768ceef6707780eaca
+  checksum: 10c0/9ecdd290bf174f6607bbdec2895fa18cee1017bb8d13a026b720fca97c782e6818a6df89d0bdaa3ce9c665b9d9d863d73b48e955518e7f090a030e9ae934b15d
   languageName: node
   linkType: hard
 
@@ -8947,7 +8947,7 @@ __metadata:
     "@gouvfr-lasuite/integration": "npm:1.0.3"
     "@gouvfr-lasuite/ui-kit": "npm:0.7.0"
     "@hocuspocus/provider": "npm:2.15.2"
-    "@ironcalc/workbook": "npm:0.5.4"
+    "@ironcalc/workbook": "npm:0.5.5"
     "@openfun/cunningham-react": "npm:3.1.0"
     "@react-pdf/renderer": "npm:4.3.0"
     "@sentry/nextjs": "npm:9.22.0"

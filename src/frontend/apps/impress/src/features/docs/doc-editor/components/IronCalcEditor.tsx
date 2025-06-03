@@ -63,9 +63,10 @@ export default function IronCalcEditor({
             console.error('Failed to load existing content:', e);
           }
         }
+        const title = doc.title || 'Untitled Workbook';
 
         // If no content or failed to load, create new model
-        setModel(new Model('Workbook1', 'en', 'UTC'));
+        setModel(new Model(title, 'en', 'UTC'));
 
       },
       () => {},

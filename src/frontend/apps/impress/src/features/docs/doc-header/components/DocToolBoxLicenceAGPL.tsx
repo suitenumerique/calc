@@ -1,8 +1,9 @@
 import { Button, useModal } from '@openfun/cunningham-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { createRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
+import { upload } from '@/features/docs/doc-management/api/useUploadDoc';
 
 import {
   DropdownMenu,
@@ -44,6 +45,9 @@ export const DocToolBoxLicenceAGPL = ({
   modalHistory,
   modalShare,
 }: DocToolBoxLicenceProps) => {
+
+  const fileInputRef = createRef<HTMLInputElement>();
+
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -85,6 +89,14 @@ export const DocToolBoxLicenceAGPL = ({
           },
         ]
       : []),
+    {
+      label: t('Import'),
+      icon: 'upload',
+      callback: () => {
+        fileInputRef.current?.click();
+      },
+      testId: `docs-actions-${doc.is_favorite ? 'unpin' : 'pin'}-${doc.id}`,
+    },
     {
       label: doc.is_favorite ? t('Unpin') : t('Pin'),
       icon: 'push_pin',
@@ -138,12 +150,27 @@ export const DocToolBoxLicenceAGPL = ({
     }
 
     void queryClient.resetQueries({
-      queryKey: [KEY_LIST_DOC_VERSIONS],
+      queryKey: [KEY_DOC, { id: doc.id }],
     });
   }, [modalHistory.isOpen, queryClient]);
 
   return (
     <>
+      <input
+        type="file"
+        accept="*"
+        ref={fileInputRef}
+        onChange={ async (event) => {
+          await upload({
+            id: doc.id,
+            input: event.target,
+          });
+          void queryClient.resetQueries({
+            queryKey: [KEY_DOC, { id: doc.id }],
+          });
+        }}
+        hidden
+      />
       {!isSmallMobile && (
         <Button
           color="tertiary-text"

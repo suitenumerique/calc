@@ -14,11 +14,13 @@ import { useResponsiveStore } from '@/stores';
 interface DocToolBoxProps {
   doc: Doc;
 }
+// TODO: Restore license switcher
+// process.env.NEXT_PUBLIC_PUBLISH_AS_MIT === 'false'
+// ? import('./DocToolBoxLicenceAGPL').then((mod) => mod.DocToolBoxLicenceAGPL)
+// : import('./DocToolBoxLicenceMIT').then((mod) => mod.DocToolBoxLicenceMIT),
 
 const DocToolBoxLicence = dynamic(() =>
-  process.env.NEXT_PUBLIC_PUBLISH_AS_MIT === 'false'
-    ? import('./DocToolBoxLicenceAGPL').then((mod) => mod.DocToolBoxLicenceAGPL)
-    : import('./DocToolBoxLicenceMIT').then((mod) => mod.DocToolBoxLicenceMIT),
+  import('./DocToolBoxLicenceAGPL').then((mod) => mod.DocToolBoxLicenceAGPL),
 );
 
 export const DocToolBox = ({ doc }: DocToolBoxProps) => {

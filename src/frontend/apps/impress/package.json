@@ -28,7 +28,7 @@
     "@gouvfr-lasuite/integration": "1.0.3",
     "@gouvfr-lasuite/ui-kit": "0.7.0",
     "@hocuspocus/provider": "2.15.2",
-    "@ironcalc/workbook": "0.5.4",
+    "@ironcalc/workbook": "0.5.5",
     "@openfun/cunningham-react": "3.1.0",
     "@react-pdf/renderer": "4.3.0",
     "@sentry/nextjs": "9.22.0",
