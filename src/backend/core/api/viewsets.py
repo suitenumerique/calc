@@ -50,9 +50,6 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-ancestors
 
-from django import forms
-
-
 class NestedGenericViewSet(viewsets.GenericViewSet):
     """
     A generic Viewset aims to be used in a nested route context.
