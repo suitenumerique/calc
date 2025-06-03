@@ -646,7 +646,6 @@ class DocumentViewSet(
         No revision for now, we assume a unique user is editing the document at a time."""
         logger = logging.getLogger(__name__)
         logger.info(f"Updating document with ID: {kwargs.get("pk")}")
-        logger.info(f"HTTP Method: {request.method}")
 
         if request.method == http.HTTPMethod.PATCH:
             # Handle partial updates (PATCH)
@@ -654,40 +653,26 @@ class DocumentViewSet(
                 data=request.data, partial=True, context=self.get_serializer_context()
             )
             serializer.is_valid(raise_exception=True)
-            logger.info(f"Received PATCH data: {serializer.validated_data}")
-
             diffs = serializer.validated_data.get("content", "")
+            logger.info(f"Diffs: {diffs}")
             if diffs:
                 # Update the document content
                 document = self.get_object()
-                content = document.content
-                logger.info(f"Content before update: {content}")
-                # Create an Ironcalc model, apply diffs, and pass the updated content to the original update method
-                model = ic.create_user_model_from_bytes(base64.b64decode(content)) if content is not None \
-                    else ic.create_user_model("model", "en", "UTC")
-                logger.info(f"The model before applying diffs: {model}")
-                logger.info(f"Diffs: {diffs}")
-                model.apply_external_diffs(base64.b64decode(diffs))
-                updated_content = model.to_bytes()
-                logger.info(f"Updated content bytes: {updated_content}")
-                base64_content = base64.b64encode(updated_content).decode("utf-8")
-                logger.info(f"Updated content b64: {base64_content}")
+                document.update_model(diffs)
+                document.save()
+                logger.info(f"Updated document with ID: {document.pk}")
+                logger.debug(f"New content: {document.content}")
 
                 # Prepare new data with updated content
                 data = request.data.copy()
-                data["content"] = base64_content
+                data["content"] = document.content
                 serializer = self.get_serializer(
                     document,
                     data=data,
                     partial=True,
                     context=self.get_serializer_context()
                 )
-                logger.info(f"Serializer data: {serializer.initial_data}")
                 serializer.is_valid(raise_exception=True)
-                logger.info(f"Valid data after applying diffs: {serializer.validated_data}")
-                self.perform_update(serializer)
-                logger.info("Document updated successfully.")
-                logger.info(f"Updated doc content: {document.content}")
                 return drf.response.Response(serializer.data)
 
         return super().update(request, *args, **kwargs)

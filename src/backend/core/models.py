@@ -1,9 +1,11 @@
 """
 Declare and configure the models for the impress core application
 """
+import base64
 # pylint: disable=too-many-lines
 
 import hashlib
+import logging
 import smtplib
 import uuid
 from collections import defaultdict
@@ -32,6 +34,8 @@ from botocore.exceptions import ClientError
 from rest_framework.exceptions import ValidationError
 from timezone_field import TimeZoneField
 from treebeard.mp_tree import MP_Node, MP_NodeManager, MP_NodeQuerySet
+
+import ironcalc as ic
 
 logger = getLogger(__name__)
 
@@ -503,6 +507,7 @@ class Document(MP_Node, BaseModel):
     )
 
     _content = None
+    _model = None  # Ironcalc model
 
     # Tree structure
     alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -604,6 +609,51 @@ class Document(MP_Node, BaseModel):
         if version_id:
             params["VersionId"] = version_id
         return default_storage.connection.meta.client.get_object(**params)
+
+    @property
+    def model(self):
+        """Return the Ironcalc model for the document."""
+        if self._model is None:
+            if not self.content:
+                self._model = ic.create_user_model("model", "en", "UTC")
+            else:
+                try:
+                    self._model = ic.create_user_model_from_bytes(
+                        base64.b64decode(self.content)
+                    )
+                except (ValueError, TypeError) as excpt:
+                    logger.error(
+                        "Error creating Ironcalc model from document content: %s", excpt
+                    )
+                    raise ValidationError(
+                        _("Invalid document content for Ironcalc model.")
+                    ) from excpt
+        return self._model
+
+    def update_model(self, diffs: str):
+        """Update the Ironcalc model with the provided diffs.
+        Args:
+            diffs: A base64 encoded string containing the Ironcalc model diffs.
+        """
+        logger = logging.getLogger(__name__)
+        try:
+            diffs_bytes = base64.b64decode(diffs)
+            logger.info(f"Diffs bytes: {diffs_bytes}")
+        except (ValueError, TypeError) as excpt:
+            logger.error(
+                "Error decoding Ironcalc model diffs: %s", excpt
+            )
+            raise ValidationError(_("Invalid Ironcalc model diffs.")) from excpt
+        _ = self.model  # Ensure the model is initialized
+        try:
+            self._model.apply_external_diffs(diffs_bytes)
+        except Exception as excpt:
+            logger.error(
+                "Error applying Ironcalc model diffs: %s", excpt
+            )
+            raise ValidationError(_("Failed to apply Ironcalc model diffs.")) from excpt
+        # Update the content with the new model
+        self.content = base64.b64encode(self._model.to_bytes()).decode("utf-8")
 
     def get_versions_slice(self, from_version_id="", min_datetime=None, page_size=None):
         """Get document versions from object storage with pagination and starting conditions"""
