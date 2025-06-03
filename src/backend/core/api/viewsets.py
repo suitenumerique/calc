@@ -1,11 +1,16 @@
 """API endpoints"""
 # pylint: disable=too-many-lines
 
+import base64
 import json
 import logging
 import uuid
+import tempfile
+import os
 from urllib.parse import unquote, urlencode, urlparse
 
+from django.http import FileResponse
+from django.core.files import File
 from django.conf import settings
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
@@ -38,6 +43,8 @@ from core.utils import extract_attachments, filter_descendants
 
 from . import permissions, serializers, utils
 from .filters import DocumentFilter, ListDocumentFilter
+
+import ironcalc as ic
 
 logger = logging.getLogger(__name__)
 
@@ -399,6 +406,8 @@ class DocumentViewSet(
         - language (str): The target language, chosen from settings.LANGUAGES.
         Returns: JSON response with the translated text.
         Throttled by: AIDocumentRateThrottle, AIUserRateThrottle.
+
+    12. **Download**: Download a document in xlsx format.
 
     ### Ordering: created_at, updated_at, is_favorite, title
 
@@ -1405,6 +1414,37 @@ class DocumentViewSet(
         response = AIService().translate(text, language)
 
         return drf.response.Response(response, status=drf.status.HTTP_200_OK)
+
+    @drf.decorators.action(
+        detail=True,
+        methods=["get"],
+        name="Download a file in xlsx",
+        url_path="download",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def download_xlsx(self, request, *args, **kwargs):
+        """
+        POST /api/v1.0/documents/<resource_id>/download
+        Return the file in xlsx format.
+        """
+        # Check permissions first
+        print("Download xlsx")
+        document = self.get_object()
+
+        try:
+            response = document.get_content_response()
+        except (FileNotFoundError, ClientError) as err:
+            raise Http404 from err
+        # TODO: Do not write the file to buffer, but stream it directly
+        bytes_response = response["Body"].read().decode("utf-8")
+        model = ic.load_from_bytes(base64.b64decode(bytes_response))
+        tmpFilePath = os.path.join(tempfile.mkdtemp(), 'file.xlsx')
+        model.save_to_xlsx(tmpFilePath)
+
+        # model = ic.load_from_icalc(f"{document.title}.xlsx")
+
+        # model.save_to_xlsx(f"{document.title}-1.xlsx")
+        return FileResponse(open(tmpFilePath, "rb"))
 
     @drf.decorators.action(
         detail=True,
