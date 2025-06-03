@@ -31,18 +31,7 @@ export default function IronCalcEditor({
   const [selectedCell, setSelectedCell] = useState<Int32Array[3]>(
     new Int32Array([0, 1, 1]),
   );
-  const [activeUser, setActiveUsers] = useState<
-    Record<
-      string,
-      {
-        id: string;
-        user_email: string;
-        sheet_index: number;
-        row_index: number;
-        column_index: number;
-      }
-    >
-  >({});
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
 
   // Periodically fetch the latest doc
@@ -140,7 +129,6 @@ export default function IronCalcEditor({
       }
 
       void listActiveUsers({ id: doc.id }).then((users) => {
-        console.log(users['impress@impress.world']);
         const updateModelObject = Object.values(users)
           .filter((user) => user.user_email !== currentUser?.email)
           .map((user) => ({
