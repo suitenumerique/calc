@@ -79,8 +79,8 @@ export default function IronCalcEditor({
         return;
       }
 
-      const myCell = model.getSelectedCell();
-      console.log(`Selected cell ${myCell}`);
+      // const myCell = model.getSelectedCell();
+      // console.log(`Selected cell ${myCell}`);
 
       // TODO: Update the selected cell on the API with (clientId, ...[cell])
 
@@ -121,7 +121,7 @@ export default function IronCalcEditor({
           revision: doc.revision,
         })
           .then((updatedDoc) => {
-            setDoc(updatedDoc); // update local doc state
+            doc.revision = updatedDoc.revision;
           })
           .catch((error) => {
             console.error('Failed to update doc:', error);
