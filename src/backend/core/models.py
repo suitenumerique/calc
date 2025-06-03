@@ -23,6 +23,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.db import models, transaction
+from django.db.models import PositiveIntegerField
 from django.db.models.functions import Left, Length
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -505,6 +506,13 @@ class Document(MP_Node, BaseModel):
         blank=True,
         null=True,
     )
+    revision = PositiveIntegerField(
+        default=0,
+        editable=False,
+        help_text=_("Revision number of the ironcalc model, incremented on each model update."),
+        blank=False,
+        null=False,
+    )
 
     _content = None
     _model = None  # Ironcalc model
@@ -565,6 +573,9 @@ class Document(MP_Node, BaseModel):
             if has_changed:
                 content_file = ContentFile(bytes_content)
                 default_storage.save(file_key, content_file)
+                # And also increment the revision number
+                self.revision += 1
+                super().save(*args, **kwargs)  # Save again to update the revision
 
     @property
     def key_base(self):
