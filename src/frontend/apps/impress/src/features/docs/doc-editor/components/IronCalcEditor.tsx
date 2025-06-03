@@ -49,7 +49,14 @@ export default function IronCalcEditor({
         // setWorkbookState(new WorkbookState());
         console.log('IronCalc initialized');
         console.log('Doc:', doc);
-        // // TODO: Load existing content from server
+
+        let selectedCell = null;
+        if (model && model.getSelectedCell()) {
+          selectedCell = model.getSelectedCell();
+          console.log('Selected cell', selectedCell);
+        }
+
+        let newModel: Model | null = null;
         if (doc.content) {
           try {
             const bytes = new Uint8Array(
@@ -58,16 +65,22 @@ export default function IronCalcEditor({
                 .map((c) => c.charCodeAt(0)),
             );
             console.log('Loading existing content:', bytes);
-            return setModel(Model.from_bytes(bytes));
+            newModel = Model.from_bytes(bytes);
           } catch (e) {
             console.error('Failed to load existing content:', e);
           }
         }
-        const title = doc.title || 'Untitled Workbook';
+        if (!newModel) {
+          const title = doc.title || 'Untitled Workbook';
+          newModel = new Model(title, 'en', 'UTC');
+        }
 
-        // If no content or failed to load, create new model
-        setModel(new Model(title, 'en', 'UTC'));
+        // Restore selected cell if possible
+        if (selectedCell && newModel && newModel.setSelectedCell) {
+          newModel.setSelectedCell(selectedCell[1], selectedCell[2]);
+        }
 
+        setModel(newModel);
       },
       () => {},
     );
@@ -78,10 +91,6 @@ export default function IronCalcEditor({
       if (!model) {
         return;
       }
-
-      // const myCell = model.getSelectedCell();
-      // console.log(`Selected cell ${myCell}`);
-
       // TODO: Update the selected cell on the API with (clientId, ...[cell])
 
       // TODO: Get the list of users on the API
