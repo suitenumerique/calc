@@ -1,5 +1,3 @@
-import { DOCXExporter } from '@blocknote/xl-docx-exporter';
-import { PDFExporter } from '@blocknote/xl-pdf-exporter';
 import {
   Button,
   Loader,
@@ -9,7 +7,6 @@ import {
   VariantType,
   useToastProvider,
 } from '@openfun/cunningham-react';
-import { DocumentProps, pdf } from '@react-pdf/renderer';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
@@ -18,14 +15,9 @@ import { Box, Text } from '@/components';
 import { useEditorStore } from '@/docs/doc-editor';
 import { Doc, useTrans } from '@/docs/doc-management';
 
-import { exportCorsResolveFileUrl } from '../api/exportResolveFileUrl';
-import { docxDocsSchemaMappings } from '../mappingDocx';
-import { pdfDocsSchemaMappings } from '../mappingPDF';
-import { downloadFile } from '../utils';
+// import { downloadFile } from '../utils';
 
 import { downloadDoc } from '@/features/docs/doc-management/api/useDownloadDoc';
-
-import {fs} from 'fs';
 
 enum DocDownloadFormat {
   XLSX = 'xlsx',
@@ -40,15 +32,12 @@ interface ModalExportProps {
 export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
   const { t } = useTranslation();
   const { toast } = useToastProvider();
-  const { editor } = useEditorStore();
   const [isExporting, setIsExporting] = useState(false);
   const [format, setFormat] = useState<DocDownloadFormat>(
     DocDownloadFormat.XLSX,
   );
-  const { untitledDocument } = useTrans();
 
   async function onSubmit() {
-
     setIsExporting(true);
     const download = await downloadDoc({ id: doc.id });
     toast(
@@ -59,6 +48,20 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
     );
 
     setIsExporting(false);
+
+    const blob = await download.blob(); // responseType: "blob" in axios
+    const url = URL.createObjectURL(blob); // convert to an object URL
+
+    // Create a hidden <a> to trigger the “Save as…” dialog
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'file.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // Clean up the object URL to free memory
+    URL.revokeObjectURL(url);
 
     onClose();
   }
@@ -107,7 +110,7 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
         <Text $variation="600" $size="sm">
           {t('Download your document in a .xlsx format.')}
         </Text>
-        
+
         <Select
           clearable={false}
           fullWidth

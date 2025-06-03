@@ -8,7 +8,7 @@ export type UpdateDocParams = Pick<Doc, 'id'> &
 
 export const downloadDoc = async ({
   id
-}: UpdateDocParams): Promise<Doc> => {
+}: UpdateDocParams): Promise<any> => {
   const response = await fetchAPI(`documents/${id}/download`, {
     method: 'GET',
   });
@@ -16,28 +16,6 @@ export const downloadDoc = async ({
   if (!response.ok) {
     throw new APIError('Failed to download the doc', await errorCauses(response));
   }
-  return response.body;
+  return response;
 };
 
-interface UpdateDocProps {
-  onSuccess?: (data: Doc) => void;
-  listInvalideQueries?: string[];
-}
-
-export function useUpdateDoc({
-  onSuccess,
-  listInvalideQueries,
-}: UpdateDocProps = {}) {
-  const queryClient = useQueryClient();
-  return useMutation<Doc, APIError, UpdateDocParams>({
-    mutationFn: updateDoc,
-    onSuccess: (data) => {
-      listInvalideQueries?.forEach((queryKey) => {
-        void queryClient.invalidateQueries({
-          queryKey: [queryKey],
-        });
-      });
-      onSuccess?.(data);
-    },
-  });
-}
