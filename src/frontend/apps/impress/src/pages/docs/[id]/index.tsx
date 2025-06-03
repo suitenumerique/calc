@@ -55,7 +55,6 @@ const DocPage = ({ id }: DocProps) => {
     { id },
     {
       staleTime: 0,
-      queryKey: [KEY_DOC, { id }],
     },
   );
 
