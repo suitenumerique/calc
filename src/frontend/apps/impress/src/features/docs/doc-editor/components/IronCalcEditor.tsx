@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { Doc } from '@/features/docs/doc-management';
 import { updateDoc } from '@/features/docs/doc-management/api/useUpdateDoc';
+import { useDoc } from '@/features/docs/doc-management/api/useDoc';
 
 const uint8ArrayToBase64 = (uint8Array: Uint8Array) => {
   const binString = Array.from(uint8Array, (byte) =>
@@ -21,32 +22,26 @@ interface IronCalcEditorProps {
 }
 
 export default function IronCalcEditor({
-  doc /*storeId, provider*/,
+  doc: initialDoc,
 }: IronCalcEditorProps) {
+  const [doc, setDoc] = useState<Doc>(initialDoc);
   const [model, setModel] = useState<Model | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
 
+  // Periodically fetch the latest doc
+  const { data: fetchedDoc } = useDoc(
+    {
+      id: doc.id,
+      revision: doc.revision,
+    },
+    { refetchInterval: 1000 },
+  );
 
-  // const isVersion = doc.id !== storeId;
-  // const readOnly = !doc.abilities.partial_update || isVersion;
-
-  // Listen for model changes
-  // useEffect(() => {
-  // if (!model || readOnly) return;
-
-  //     const interval = setInterval(() => {
-  //         const queue = model.flushSendQueue();
-  //         if (queue.length !== 1) {
-  //             // Convert model to base64 string
-  //             const modelContent = bytesToBase64(model.toBytes());
-
-  //             // TODO: Save to server
-  //             console.log("Doc modified. new base64: ", modelContent);
-  //         }
-  //     }, 1000);
-
-  //     return () => clearInterval(interval);
-  // }, [model, doc.id, readOnly]);
+  // Update local doc state when fetchedDoc changes
+  useEffect(() => {
+    if (fetchedDoc && fetchedDoc.content !== doc.content) {
+      setDoc(fetchedDoc);
+    }
+  }, [fetchedDoc, doc.content]);
 
   useEffect(() => {
     init().then(
@@ -125,8 +120,7 @@ export default function IronCalcEditor({
           revision: doc.revision,
         })
           .then((updatedDoc) => {
-            // Update doc.revision with the value from the server
-            doc.revision = updatedDoc.revision;
+            setDoc(updatedDoc); // update local doc state
           })
           .catch((error) => {
             console.error('Failed to update doc:', error);

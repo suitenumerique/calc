@@ -35,6 +35,7 @@ from lasuite.malware_detection import malware_detection
 from rest_framework import filters, status, viewsets
 from rest_framework import response as drf_response
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
 from core import authentication, enums, models
@@ -603,6 +604,17 @@ class DocumentViewSet(
         user = self.request.user
         instance = self.get_object()
         serializer = self.get_serializer(instance)
+
+        # if the frontend revision is provided in the query params,
+        # and if it matches the instance revision, we return 200 OK
+        # so the frontend will not re-render the document.
+        revision = request.query_params.get("revision")
+        logger = logging.getLogger(__name__)
+        logger.info(f"Retrieving document with ID: {kwargs.get('pk')}, revision: {revision}")
+        logger.info(f"Document revision: {instance.revision}")
+        if revision is not None and int(revision) == instance.revision:
+            logger.info("Document revision matches, returning 200 OK without updating trace.")
+            return Response(status=status.HTTP_200_OK)
 
         # The `create` query generates 5 db queries which are much less efficient than an
         # `exists` query. The user will visit the document many times after the first visit
