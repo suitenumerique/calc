@@ -19,14 +19,12 @@ const uint8ArrayToBase64 = (uint8Array: Uint8Array) => {
 
 interface IronCalcEditorProps {
   doc: Doc;
-  userEmail: string;
   //provider: HocuspocusProvider;
   //storeId: string;
 }
 
 export default function IronCalcEditor({
   doc /*storeId, provider*/,
-  userEmail
 }: IronCalcEditorProps) {
   const [model, setModel] = useState<Model | null>(null);
   const [selectedCell, setSelectedCell] = useState<Int32Array[3]>(new Int32Array([0, 1, 1]));
@@ -54,7 +52,7 @@ export default function IronCalcEditor({
 
   //     return () => clearInterval(interval);
   // }, [model, doc.id, readOnly]);
-  const { data: user, isSuccess: userInitialized } = useAuthQuery();
+  const { data: currentUser, isSuccess: userInitialized } = useAuthQuery();
 
   useEffect(() => {
     init().then(
@@ -100,13 +98,13 @@ export default function IronCalcEditor({
         if (currentCell[cellIndex] !== selectedCell[cellIndex]) {
           console.log(`Cell changed from ${selectedCell} to ${currentCell}`);
           setSelectedCell(currentCell);
-          updateActiveUser({id: doc.id, user_email: user?.email, sheet_index: currentCell[0], row_index: currentCell[1], column_index: currentCell[2]}).catch((error) => {
+          updateActiveUser({id: doc.id, user_email: currentUser?.email, sheet_index: currentCell[0], row_index: currentCell[1], column_index: currentCell[2]}).catch((error) => {
             console.error('Failed to update active user:', error);
           });
           break;
         }
       }
-
+      
       listActiveUsers({id: doc.id}).then((users) => {
         setActiveUsers(users);
         console.log('Active users:', users);
@@ -159,16 +157,9 @@ export default function IronCalcEditor({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [doc, model, selectedCell]);
+  }, [doc, model, selectedCell, userInitialized, currentUser]);
 
   useEffect(() => {
-    const usersFormatted = Object.values(activeUser).map((user) => ({
-      id: user.user_email,
-      sheet_index: user.sheet_index,
-      row_index: user.row_index,
-      column_index: user.column_index,
-    }));
-    console.log(usersFormatted);
       model?.setUsers(
         Object.values(activeUser).map((user) => ({
           id: user.user_email,
@@ -176,7 +167,7 @@ export default function IronCalcEditor({
           row: user.row_index,
           column: user.column_index,
         })).filter(
-          (user) => user.id !== user.email
+          (user) => user.id !== currentUser.email
       ))
     }, [activeUser])
 
