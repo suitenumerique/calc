@@ -1,5 +1,3 @@
-import { DOCXExporter } from '@blocknote/xl-docx-exporter';
-import { PDFExporter } from '@blocknote/xl-pdf-exporter';
 import {
   Button,
   Loader,
@@ -9,7 +7,6 @@ import {
   VariantType,
   useToastProvider,
 } from '@openfun/cunningham-react';
-import { DocumentProps, pdf } from '@react-pdf/renderer';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
@@ -18,15 +15,13 @@ import { Box, Text } from '@/components';
 import { useEditorStore } from '@/docs/doc-editor';
 import { Doc, useTrans } from '@/docs/doc-management';
 
-import { exportCorsResolveFileUrl } from '../api/exportResolveFileUrl';
-import { TemplatesOrdering, useTemplates } from '../api/useTemplates';
-import { docxDocsSchemaMappings } from '../mappingDocx';
-import { pdfDocsSchemaMappings } from '../mappingPDF';
-import { downloadFile } from '../utils';
+// import { downloadFile } from '../utils';
+
+import { downloadDoc } from '@/features/docs/doc-management/api/useDownloadDoc';
 
 enum DocDownloadFormat {
-  PDF = 'pdf',
-  DOCX = 'docx',
+  XLSX = 'xlsx',
+  ICAL = 'ical',
 }
 
 interface ModalExportProps {
@@ -36,77 +31,15 @@ interface ModalExportProps {
 
 export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
   const { t } = useTranslation();
-  const { data: templates } = useTemplates({
-    ordering: TemplatesOrdering.BY_CREATED_ON_DESC,
-  });
   const { toast } = useToastProvider();
-  const { editor } = useEditorStore();
-  const [templateSelected, setTemplateSelected] = useState<string>('');
   const [isExporting, setIsExporting] = useState(false);
   const [format, setFormat] = useState<DocDownloadFormat>(
-    DocDownloadFormat.PDF,
+    DocDownloadFormat.XLSX,
   );
-  const { untitledDocument } = useTrans();
-
-  const templateOptions = useMemo(() => {
-    const templateOptions = (templates?.pages || [])
-      .map((page) =>
-        page.results.map((template) => ({
-          label: template.title,
-          value: template.code,
-        })),
-      )
-      .flat();
-
-    templateOptions.unshift({
-      label: t('Empty template'),
-      value: '',
-    });
-
-    return templateOptions;
-  }, [t, templates?.pages]);
 
   async function onSubmit() {
-    if (!editor) {
-      toast(t('The export failed'), VariantType.ERROR);
-      return;
-    }
-
     setIsExporting(true);
-
-    const title = (doc.title || untitledDocument)
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s/g, '-');
-
-    const html = templateSelected;
-    let exportDocument = editor.document;
-    if (html) {
-      const blockTemplate = await editor.tryParseHTMLToBlocks(html);
-      exportDocument = [...blockTemplate, ...editor.document];
-    }
-
-    let blobExport: Blob;
-    if (format === DocDownloadFormat.PDF) {
-      const exporter = new PDFExporter(editor.schema, pdfDocsSchemaMappings, {
-        resolveFileUrl: async (url) => exportCorsResolveFileUrl(doc.id, url),
-      });
-      const pdfDocument = (await exporter.toReactPDFDocument(
-        exportDocument,
-      )) as React.ReactElement<DocumentProps>;
-
-      blobExport = await pdf(pdfDocument).toBlob();
-    } else {
-      const exporter = new DOCXExporter(editor.schema, docxDocsSchemaMappings, {
-        resolveFileUrl: async (url) => exportCorsResolveFileUrl(doc.id, url),
-      });
-
-      blobExport = await exporter.toBlob(exportDocument);
-    }
-
-    downloadFile(blobExport, `${title}.${format}`);
-
+    const download = await downloadDoc({ id: doc.id });
     toast(
       t('Your {{format}} was downloaded succesfully', {
         format,
@@ -115,6 +48,20 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
     );
 
     setIsExporting(false);
+
+    const blob = await download.blob(); // responseType: "blob" in axios
+    const url = URL.createObjectURL(blob); // convert to an object URL
+
+    // Create a hidden <a> to trigger the “Save as…” dialog
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'file.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // Clean up the object URL to free memory
+    URL.revokeObjectURL(url);
 
     onClose();
   }
@@ -161,26 +108,14 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
         className="--docs--modal-export-content"
       >
         <Text $variation="600" $size="sm">
-          {t('Download your document in a .docx or .pdf format.')}
+          {t('Download your document in a .xlsx format.')}
         </Text>
-        <Select
-          clearable={false}
-          fullWidth
-          label={t('Template')}
-          options={templateOptions}
-          value={templateSelected}
-          onChange={(options) =>
-            setTemplateSelected(options.target.value as string)
-          }
-        />
+
         <Select
           clearable={false}
           fullWidth
           label={t('Format')}
-          options={[
-            { label: t('Docx'), value: DocDownloadFormat.DOCX },
-            { label: t('PDF'), value: DocDownloadFormat.PDF },
-          ]}
+          options={[{ label: t('Xlsx'), value: DocDownloadFormat.XLSX }]}
           value={format}
           onChange={(options) =>
             setFormat(options.target.value as DocDownloadFormat)

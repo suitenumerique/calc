@@ -577,7 +577,7 @@ class Document(MP_Node, BaseModel):
 
     @property
     def content(self):
-        """Return the json content from object storage if available"""
+        """Return the base64 content from object storage if available"""
         if self._content is None and self.id:
             try:
                 response = self.get_content_response()
