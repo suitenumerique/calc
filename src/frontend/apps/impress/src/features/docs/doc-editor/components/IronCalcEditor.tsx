@@ -8,6 +8,7 @@ import { updateDoc } from '@/features/docs/doc-management/api/useUpdateDoc';
 import { updateActiveUser } from '@/features/docs/doc-management/api/useUpdateActiveUser';
 import { listActiveUsers } from '@/features/docs/doc-management/api/useListActiveUsers';
 import { useAuthQuery } from '@/features/auth/api';
+import { useDoc } from '@/features/docs/doc-management/api/useDoc';
 
 const uint8ArrayToBase64 = (uint8Array: Uint8Array) => {
   const binString = Array.from(uint8Array, (byte) =>
@@ -24,13 +25,22 @@ interface IronCalcEditorProps {
 }
 
 export default function IronCalcEditor({
-  doc /*storeId, provider*/,
+  doc: initialDoc,
 }: IronCalcEditorProps) {
+  const [doc, setDoc] = useState<Doc>(initialDoc);
   const [model, setModel] = useState<Model | null>(null);
   const [selectedCell, setSelectedCell] = useState<Int32Array[3]>(new Int32Array([0, 1, 1]));
   const [activeUser, setActiveUsers] = useState<Record<string, {id: string, user_email: string, sheet_index: number, row_index: number, column_index: number}>>({});
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents
 
+  // Periodically fetch the latest doc
+  const { data: fetchedDoc } = useDoc(
+    {
+      id: doc.id,
+      revision: doc.revision,
+    },
+    { refetchInterval: 1000 },
+  );
 
   // const isVersion = doc.id !== storeId;
   // const readOnly = !doc.abilities.partial_update || isVersion;
@@ -53,6 +63,12 @@ export default function IronCalcEditor({
   //     return () => clearInterval(interval);
   // }, [model, doc.id, readOnly]);
   const { data: currentUser, isSuccess: userInitialized } = useAuthQuery();
+  // Update local doc state when fetchedDoc changes
+  useEffect(() => {
+    if (fetchedDoc && fetchedDoc.content !== doc.content) {
+      setDoc(fetchedDoc);
+    }
+  }, [fetchedDoc, doc.content]);
 
   useEffect(() => {
     init().then(
@@ -110,6 +126,8 @@ export default function IronCalcEditor({
         setActiveUsers(users);
         console.log('Active users:', users);
       })
+      // const myCell = model.getSelectedCell();
+      // console.log(`Selected cell ${myCell}`);
 
       // TODO: Update the selected cell on the API with (clientId, ...[cell])
 
@@ -143,20 +161,18 @@ export default function IronCalcEditor({
       const flushSendQueue = model.flushSendQueue();
       // console.log('Flush send queue:', flushSendQueue);
       if (!(flushSendQueue.length === 1 && flushSendQueue[0] === 0)) {
-        const base64Content = uint8ArrayToBase64(model.toBytes());
-        console.log(`New data : ${base64Content}`);
-        doc.content = base64Content;
-        console.log('Doc:', doc);
-        if (doc.title && (doc.title !== model.getName())) {
-          model.setName(doc.title);
-        }
-        // Call the save method with doc.id and the new content as base64
+        const base64Content = uint8ArrayToBase64(flushSendQueue);
         updateDoc({
           id: doc.id,
           content: base64Content,
-        }).catch((error) => {
-          console.error('Failed to update doc:', error);
-        });
+          revision: doc.revision,
+        })
+          .then((updatedDoc) => {
+            doc.revision = updatedDoc.revision;
+          })
+          .catch((error) => {
+            console.error('Failed to update doc:', error);
+          });
       }
     }, 1000);
 

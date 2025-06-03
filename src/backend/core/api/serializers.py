@@ -258,6 +258,7 @@ class DocumentSerializer(ListDocumentSerializer):
             "nb_accesses_direct",
             "numchild",
             "path",
+            "revision",
             "title",
             "updated_at",
             "user_roles",
@@ -275,6 +276,7 @@ class DocumentSerializer(ListDocumentSerializer):
             "nb_accesses_direct",
             "numchild",
             "path",
+            "revision",
             "updated_at",
             "user_roles",
         ]

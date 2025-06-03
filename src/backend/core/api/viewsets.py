@@ -1,4 +1,5 @@
 """API endpoints"""
+import http
 # pylint: disable=too-many-lines
 
 import base64
@@ -37,6 +38,7 @@ from lasuite.malware_detection import malware_detection
 from rest_framework import filters, status, viewsets
 from rest_framework import response as drf_response
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
 from core import authentication, enums, models
@@ -611,6 +613,17 @@ class DocumentViewSet(
         instance = self.get_object()
         serializer = self.get_serializer(instance)
 
+        # if the frontend revision is provided in the query params,
+        # and if it matches the instance revision, we return 200 OK
+        # so the frontend will not re-render the document.
+        revision = request.query_params.get("revision")
+        logger = logging.getLogger(__name__)
+        logger.info(f"Retrieving document with ID: {kwargs.get('pk')}, revision: {revision}")
+        logger.info(f"Document revision: {instance.revision}")
+        if revision is not None and int(revision) == instance.revision:
+            logger.info("Document revision matches, returning 200 OK without updating trace.")
+            return Response(status=status.HTTP_200_OK)
+
         # The `create` query generates 5 db queries which are much less efficient than an
         # `exists` query. The user will visit the document many times after the first visit
         # so that's what we should optimize for.
@@ -647,6 +660,49 @@ class DocumentViewSet(
     def perform_destroy(self, instance):
         """Override to implement a soft delete instead of dumping the record in database."""
         instance.soft_delete()
+
+    def update(self, request, *args, **kwargs):
+        """This method will use the "content" field as a diff to update the document.
+        No revision for now, we assume a unique user is editing the document at a time."""
+        logger = logging.getLogger(__name__)
+        logger.info(f"Updating document with ID: {kwargs.get("pk")}")
+
+        if request.method == http.HTTPMethod.PATCH:
+            # Handle partial updates (PATCH)
+            serializer = self.get_serializer(
+                data=request.data, partial=True, context=self.get_serializer_context()
+            )
+            serializer.is_valid(raise_exception=True)
+            diffs = serializer.validated_data.get("content", "")
+            logger.info(f"Diffs: {diffs}")
+            if diffs:
+                # Update the document content
+                document = self.get_object()
+                # TODO: not working because revision is always None - why?
+                # revision = serializer.validated_data.get("revision", None)
+                # if revision and document.revision != revision:
+                #     raise drf.exceptions.ValidationError(
+                #         {"revision": "Revision mismatch. Please refresh the document."}
+                #     )
+                document.update_model(diffs)
+                document.save()
+                logger.info(f"Updated document with ID: {document.pk}")
+                logger.debug(f"New content: {document.content}")
+
+                # Prepare new data with updated content
+                data = request.data.copy()
+                data["content"] = document.content
+                serializer = self.get_serializer(
+                    document,
+                    data=data,
+                    partial=True,
+                    context=self.get_serializer_context()
+                )
+                serializer.is_valid(raise_exception=True)
+                return drf.response.Response(serializer.data)
+
+        return super().update(request, *args, **kwargs)
+
 
     @drf.decorators.action(
         detail=False,
