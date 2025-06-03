@@ -4,7 +4,7 @@ import { APIError, errorCauses, fetchAPI } from '@/api';
 import { Doc } from '@/features/docs';
 
 export type UpdateDocParams =
-  | (Pick<Doc, 'id'> & { content: string; revision: number })
+  | (Pick<Doc, 'id'> & { content: string; revision?: number })
   | (Pick<Doc, 'id'> & { title: string });
 
 export const updateDoc = async ({

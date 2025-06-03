@@ -38,7 +38,7 @@ export interface Doc {
   id: string;
   title?: string;
   content: Base64;
-  revision: number;
+  revision?: number;
   creator: string;
   is_favorite: boolean;
   link_reach: LinkReach;

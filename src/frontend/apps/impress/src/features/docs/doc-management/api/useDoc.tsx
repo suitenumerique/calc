@@ -26,12 +26,15 @@ export const KEY_DOC = 'doc';
 export const KEY_DOC_VISIBILITY = 'doc-visibility';
 
 export function useDoc(
-  param: DocParams,
-  queryConfig?: UseQueryOptions<Doc, APIError, Doc>,
+  params: DocParams,
+  options?: Omit<
+    UseQueryOptions<Doc, APIError<unknown>, Doc>,
+    'queryKey' | 'queryFn'
+  >,
 ) {
   return useQuery<Doc, APIError, Doc>({
-    queryKey: [KEY_DOC, param],
-    queryFn: () => getDoc(param),
-    ...queryConfig,
+    queryKey: [KEY_DOC, params],
+    queryFn: () => getDoc(params),
+    ...options,
   });
 }
