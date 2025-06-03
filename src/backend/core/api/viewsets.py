@@ -1560,7 +1560,7 @@ class DocumentViewSet(
 
         print({**previous_active_users, **current_active_users})
 
-        r.set(f"document_active_users_{document.id}", json.dumps({**previous_active_users, **current_active_users}))
+        r.set(f"document_active_users_{document.id}", json.dumps({**previous_active_users, **current_active_users}), ex=60)
 
         return drf.response.Response({}, status=drf.status.HTTP_200_OK)
 
