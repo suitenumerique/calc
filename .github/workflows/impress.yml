@@ -19,7 +19,7 @@ jobs:
     if: github.event_name == 'pull_request' # Makes sense only for pull requests
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: show
@@ -42,7 +42,7 @@ jobs:
       github.event_name == 'pull_request'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 50
       - name: Check that the CHANGELOG has been modified in the current branch
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Check CHANGELOG max line length
         run: |
           max_line_length=$(cat CHANGELOG.md | grep -Ev "^\[.*\]: https://github.com" | wc -L)
@@ -66,7 +66,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Install codespell
         run: pip install --user codespell
       - name: Check for typos
@@ -87,9 +87,9 @@ jobs:
         working-directory: src/backend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Install Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13.3"
       - name: Upgrade pip and setuptools
@@ -140,7 +140,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create writable /data
         run: |
@@ -148,7 +148,7 @@ jobs:
           sudo mkdir -p /data/static
 
       - name: Restore the mail templates
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: mail-templates
         with:
           path: "src/backend/core/templates/mail"
@@ -184,7 +184,7 @@ jobs:
             mc version enable impress/impress-media-storage"
 
       - name: Install Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13.3"
 
