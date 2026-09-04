@@ -50,7 +50,7 @@ dependencies = [
     "ironcalc==0.5.6",
     "jsonschema==4.24.0",
     "lxml==5.4.0",
-    "markdown==3.8",
+    "markdown==3.8.1",
     "mozilla-django-oidc==4.0.1",
     "nested-multipart-parser==1.5.0",
     "openai==1.82.1",
